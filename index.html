@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>International Grace</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: url('flowers.jpg') no-repeat center center fixed; background-size: cover; color: #fff; margin: 0; padding: 0; }
+    .container { width: 80%; margin: auto; text-align: center; padding: 20px; }
+    .hidden { display: none; }
+    input, button { padding: 10px; margin: 5px; border-radius: 5px; border: none; }
+    button { background: #ff9800; color: #fff; font-weight: bold; cursor: pointer; }
+    .salle { background: rgba(0,0,0,0.6); margin: 20px auto; padding: 20px; border-radius: 10px; }
+    #chat { width: 100%; max-width: 600px; margin: 20px auto; border: 1px solid #ccc; background: #fff; color: #000; height: 400px; overflow-y: auto; padding: 10px; border-radius: 10px; }
+    #inputChat { display: flex; justify-content: center; gap: 10px; }
+    #inputChat input[type="text"] { flex: 1; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Auth -->
+  <div id="authPage">
+    <h1>Bienvenue sur International Grace</h1>
+    <h2>Inscription</h2>
+    <input type="text" id="regName" placeholder="Nom complet"><br>
+    <input type="email" id="regEmail" placeholder="Email"><br>
+    <input type="password" id="regPass" placeholder="Mot de passe"><br>
+    <button onclick="register()">S’inscrire</button>
+
+    <h2>Connexion</h2>
+    <input type="email" id="logEmail" placeholder="Email"><br>
+    <input type="password" id="logPass" placeholder="Mot de passe"><br>
+    <button onclick="login()">Se connecter</button>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="dashboard" class="hidden">
+    <h1>Tableau de bord</h1>
+    <p>Bienvenue, <span id="userName"></span> !</p>
+
+    <div class="salle">
+      <h2>Salle Vente</h2>
+      <button onclick="joinSalle('vente')">Rejoindre</button>
+    </div>
+    <div class="salle">
+      <h2>Salle Rencontre & Entraide</h2>
+      <button onclick="joinSalle('entraide')">Rejoindre</button>
+    </div>
+    <div class="salle">
+      <h2>Salle Formation</h2>
+      <button onclick="joinSalle('formation')">Rejoindre</button>
+    </div>
+    <div class="salle">
+      <h2>Salle Emploi & Recrutement</h2>
+      <button onclick="joinSalle('emploi')">Rejoindre</button>
+    </div>
+  </div>
+
+  <!-- Salle -->
+  <div id="sallePage" class="hidden">
+    <h1 id="salleTitle"></h1>
+    <button onclick="backToDashboard()">⬅ Retour</button>
+    <div id="chat"></div>
+    <div id="inputChat">
+      <input type="text" id="message" placeholder="Écrire un message...">
+      <input type="file" id="fileInput" accept="image/*,video/*">
+      <button onclick="sendMessage()">Envoyer</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
+
+// Firebase config
+const firebaseConfig = {
+  apiKey: "AIzaSyAScFGLnInmQIH3rMeQPA8Pq5JFEvQeOaw",
+  authDomain: "international-grace-app.firebaseapp.com",
+  projectId: "international-grace-app",
+  storageBucket: "international-grace-app.firebasestorage.app",
+  messagingSenderId: "198454951680",
+  appId: "1:198454951680:web:c84ed34849216a0ad4fde5"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const storage = getStorage(app);
+
+let currentUser = null;
+let currentSalle = null;
+
+function register() {
+  const name = document.getElementById("regName").value;
+  const email = document.getElementById("regEmail").value;
+  const pass = document.getElementById("regPass").value;
+  if(name && email && pass){
+    localStorage.setItem("user_"+email, JSON.stringify({name, pass}));
+    alert("Inscription réussie !");
+  } else { alert("Remplissez tous les champs."); }
+}
+
+function login() {
+  const email = document.getElementById("logEmail").value;
+  const pass = document.getElementById("logPass").value;
+  let user = localStorage.getItem("user_"+email);
+  if(user){
+    user = JSON.parse(user);
+    if(user.pass === pass){
+      currentUser = user;
+      document.getElementById("authPage").classList.add("hidden");
+      document.getElementById("dashboard").classList.remove("hidden");
+      document.getElementById("userName").innerText = user.name;
+    } else { alert("Mot de passe incorrect."); }
+  } else { alert("Utilisateur introuvable."); }
+}
+
+// Fonction join salle avec paiement mobile puis code de confirmation
+function joinSalle(type) {
+  // Étape 1 : paiement mobile simulé
+  const paiement = confirm("Pour accéder à cette salle, payez 2000F via Mobile Money.\nNuméros : +229 0154992775 / +229 0168036302\nCliquez OK après paiement.");
+  if(!paiement){ alert("Accès refusé, paiement non effectué."); return; }
+
+  // Étape 2 : code de confirmation
+  const codeSecret = Math.floor(1000 + Math.random()*9000);
+  const userCode = prompt("Entrez ce code de confirmation pour accéder à la salle : " + codeSecret);
+  if(userCode != codeSecret){ alert("Code incorrect. Accès refusé !"); return; }
+
+  // Étape 3 : accès salle
+  currentSalle = type;
+  document.getElementById("dashboard").classList.add("hidden");
+  document.getElementById("sallePage").classList.remove("hidden");
+  document.getElementById("salleTitle").innerText = "Salle : " + type;
+  loadMessages(type);
+}
+
+function backToDashboard() {
+  document.getElementById("sallePage").classList.add("hidden");
+  document.getElementById("dashboard").classList.remove("hidden");
+}
+
+function sendMessage() {
+  const text = document.getElementById("message").value;
+  const file = document.getElementById("fileInput").files[0];
+
+  if(text.trim() !== ""){
+    push(ref(db,"salles/"+currentSalle), {
+      user: currentUser.name,
+      text: text,
+      time: Date.now()
+    });
+  }
+
+  if(file){
+    const storageRef = sRef(storage, "uploads/"+Date.now()+"_"+file.name);
+    uploadBytes(storageRef,file).then(()=>{
+      getDownloadURL(storageRef).then(url=>{
+        push(ref(db,"salles/"+currentSalle), {
+          user: currentUser.name,
+          media: url,
+          type: file.type.startsWith("image/")?"image":"video",
+          time: Date.now()
+        });
+      });
+    });
+  }
+
+  document.getElementById("message").value="";
+  document.getElementById("fileInput").value="";
+}
+
+function loadMessages(salle){
+  const chat = document.getElementById("chat");
+  chat.innerHTML="";
+  onChildAdded(ref(db,"salles/"+salle), snapshot=>{
