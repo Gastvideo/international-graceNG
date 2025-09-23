@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>International-Grace</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0; padding: 0;
+    background: url('https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=1050&q=80') no-repeat center center fixed;
+    background-size: cover;
+    color: #333;
+  }
+  .overlay {
+    background: rgba(255,255,255,0.9);
+    min-height: 100vh;
+    padding: 20px;
+  }
+  h1 { text-align: center; color: #2c3e50; }
+  form { max-width: 400px; margin: 20px auto; background: #fff; padding: 20px; border-radius: 10px; }
+  input, select { width: 100%; padding: 8px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; }
+  button { padding: 10px 15px; border: none; border-radius: 8px; background: #3498db; color: #fff; cursor: pointer; }
+  #dashboard { display: none; max-width: 800px; margin: 20px auto; }
+  .salle { background: #fff; padding: 15px; margin: 10px 0; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+  .hidden { display: none; }
+  .payment-option { margin: 10px 0; }
+  .payment-box { background: #ecf0f1; padding: 10px; border-radius: 8px; margin: 10px 0; }
+</style>
+</head>
+<body>
+<div class="overlay">
+  <h1>Bienvenue sur la page International-Grace</h1>
+
+  <!-- Formulaire d'inscription -->
+  <form id="signup-form">
+    <h2>S'inscrire à la plateforme</h2>
+    <input type="text" id="nom" placeholder="Nom" required>
+    <input type="text" id="prenom" placeholder="Prénom" required>
+    <select id="sex" required>
+      <option value="">Sexe</option>
+      <option value="Homme">Homme</option>
+      <option value="Femme">Femme</option>
+    </select>
+    <input type="number" id="age" placeholder="Âge" required>
+    <input type="text" id="profession" placeholder="Profession" required>
+    <input type="tel" id="telephone" placeholder="Numéro de téléphone" required>
+    <button type="submit">Enregistrer</button>
+  </form>
+
+  <!-- Tableau de bord -->
+  <div id="dashboard">
+    <h2>Tableau de bord</h2>
+    <div class="salle" id="vente">
+      <h3>Salle Vente</h3>
+      <p>Achetez et vendez des produits entre membres.</p>
+      <button onclick="showPayment('vente')">Rejoindre la salle</button>
+      <div class="payment-option hidden" id="payment-vente">
+        <button onclick="showPaymentNumbers('vente','MTN MoMo')">MTN MoMo</button>
+        <button onclick="showPaymentNumbers('vente','Moov Money')">Moov Money</button>
+      </div>
+      <div class="payment-box hidden" id="payment-box-vente">
+        <p id="number-vente"></p>
+        <button onclick="copyNumber('number-vente')">Copy</button>
+        <button onclick="sendPayment('vente')">Envoyer & Confirmer</button>
+      </div>
+    </div>
+
+    <div class="salle" id="entraide">
+      <h3>Salle Rencontre & Entraide</h3>
+      <p>Discutez, entraidez-vous et créez des liens.</p>
+      <button onclick="showPayment('entraide')">Rejoindre la salle</button>
+      <div class="payment-option hidden" id="payment-entraide">
+        <button onclick="showPaymentNumbers('entraide','MTN MoMo')">MTN MoMo</button>
+        <button onclick="showPaymentNumbers('entraide','Moov Money')">Moov Money</button>
+      </div>
+      <div class="payment-box hidden" id="payment-box-entraide">
+        <p id="number-entraide"></p>
+        <button onclick="copyNumber('number-entraide')">Copy</button>
+        <button onclick="sendPayment('entraide')">Envoyer & Confirmer</button>
+      </div>
+    </div>
+
+    <div class="salle" id="formation">
+      <h3>Salle Formation</h3>
+      <p>Accédez à des cours et formations en ligne.</p>
+      <button onclick="showPayment('formation')">Rejoindre la salle</button>
+      <div class="payment-option hidden" id="payment-formation">
+        <button onclick="showPaymentNumbers('formation','MTN MoMo')">MTN MoMo</button>
+        <button onclick="showPaymentNumbers('formation','Moov Money')">Moov Money</button>
+      </div>
+      <div class="payment-box hidden" id="payment-box-formation">
+        <p id="number-formation"></p>
+        <button onclick="copyNumber('number-formation')">Copy</button>
+        <button onclick="sendPayment('formation')">Envoyer & Confirmer</button>
+      </div>
+    </div>
+
+    <div class="salle" id="emploi">
+      <h3>Salle Emploi & Recrutement</h3>
+      <p>Consultez ou publiez des offres d’emploi.</p>
+      <button onclick="showPayment('emploi')">Rejoindre la salle</button>
+      <div class="payment-option hidden" id="payment-emploi">
+        <button onclick="showPaymentNumbers('emploi','MTN MoMo')">MTN MoMo</button>
+        <button onclick="showPaymentNumbers('emploi','Moov Money')">Moov Money</button>
+      </div>
+      <div class="payment-box hidden" id="payment-box-emploi">
+        <p id="number-emploi"></p>
+        <button onclick="copyNumber('number-emploi')">Copy</button>
+        <button onclick="sendPayment('emploi')">Envoyer & Confirmer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const momoNumbers = {
+  'MTN MoMo': '+229 0154992775',
+  'Moov Money': '+229 0168036302'
+};
+
+document.getElementById('signup-form').addEventListener('submit', function(e){
+  e.preventDefault();
+  alert('Enregistrement réussi !');
+  this.style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+});
+
+function showPayment(salle){
+  document.getElementById('payment-'+salle).classList.remove('hidden');
+}
+
+function showPaymentNumbers(salle, provider){
+  const numberEl = document.getElementById('number-'+salle);
+  numberEl.textContent = `Numéro ${provider} : ${momoNumbers[provider]} \nMontant : 2000 F`;
+  document.getElementById('payment-box-'+salle).classList.remove('hidden');
+}
+
+function copyNumber(id){
+  const text = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(text);
+  alert('Numéro copié dans le presse-papier');
+}
+
+function sendPayment(salle){
+  alert('Paiement effectué avec succès ! Accès à la salle débloqué.');
+  const salleDiv = document.getElementById(salle);
+  salleDiv.style.background = '#dff0d8';
+  salleDiv.querySelector('button').disabled = true;
+}
+</script>
+</body>
+      </html>
