@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connexion</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f0f0f0; display:flex; justify-content:center; align-items:center; height:100vh; }
+    .box { background:white; padding:2rem; border-radius:10px; box-shadow:0 4px 8px rgba(0,0,0,0.2); width:300px; text-align:center; }
+    input, button { width:100%; padding:10px; margin:8px 0; border-radius:5px; border:1px solid #ccc; }
+    button { background:#007bff; color:white; border:none; cursor:pointer; }
+    button:hover { background:#0056b3; }
+    .error { color:red; margin-top:10px; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>Connexion</h2>
+    <input type="email" id="email" placeholder="Email" required>
+    <input type="password" id="password" placeholder="Mot de passe" required>
+    <button id="loginBtn">Se connecter</button>
+    <div id="errorMessage" class="error"></div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
+
+    // 🔑 Mets ta vraie config Firebase ici (Firebase Console > Project settings > SDK setup > Config)
+    const firebaseConfig = {
+      apiKey: "TA_CLE_API",
+      authDomain: "international-grace-83ddf.firebaseapp.com",
+      databaseURL: "https://international-grace-83ddf-default-rtdb.firebaseio.com",
+      projectId: "international-grace-83ddf",
+      storageBucket: "international-grace-83ddf.appspot.com",
+      messagingSenderId: "TON_ID",
+      appId: "TON_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    document.getElementById("loginBtn").addEventListener("click", async () => {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      const errorDiv = document.getElementById("errorMessage");
+
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        window.location.href = "chat.html";
+      } catch (err) {
+        errorDiv.textContent = "Erreur: " + err.message;
+      }
+    });
+  </script>
+</body>
+  </html>
